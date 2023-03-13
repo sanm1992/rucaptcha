@@ -28,6 +28,7 @@ module RuCaptcha
       @config.difficulty = 3
       @config.expires_in = 2.minutes
       @config.skip_cache_store_check = false
+      @config.captcha_char = [*'1'..'9', *'A'..'Z', *'a'..'z']
 
       @config.cache_store = if Rails.application
                               Rails.application.config.cache_store
@@ -44,10 +45,10 @@ module RuCaptcha
 
     def generate
       length = config.length
-
+      captcha_char = config.captcha_char
       raise RuCaptcha::Errors::Configuration, "length config error, value must in 3..7" unless length.in?(3..7)
 
-      result = RuCaptchaCore.create(length, config.difficulty || 5)
+      result = RuCaptchaCore.create(length, config.difficulty || 5, captcha_char)
       [result[0].downcase, result[1].pack("c*")]
     end
 

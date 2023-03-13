@@ -4,12 +4,15 @@ use imageproc::noise::gaussian_noise_mut;
 use rand::{thread_rng, Rng};
 use rusttype::{Font, Scale};
 use std::io::Cursor;
+use lazy_static::lazy_static;
 
-static BASIC_CHAR: [char; 54] = [
-    '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'M',
-    'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
-    'h', 'j', 'k', 'm', 'n', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-];
+lazy_static! {
+    static ref BASIC_CHAR: Vec<char> = vec![
+        '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'M',
+        'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
+        'h', 'j', 'k', 'm', 'n', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+    ];
+}
 
 static FONT_BYTES1: &[u8; 145008] = include_bytes!("../fonts/FuzzyBubbles-Regular.ttf");
 static FONT_BYTES2: &[u8; 37792] = include_bytes!("../fonts/Handlee-Regular.ttf");
@@ -41,11 +44,12 @@ fn rand_num(len: usize) -> usize {
     rng.gen_range(0..=len)
 }
 
-fn get_captcha(len: usize) -> Vec<String> {
+fn get_captcha(len: usize, captcha_array: Vec<char>) -> Vec<String> {
     let mut res = vec![];
+    let rand_limit = captcha_array.len() - 1;
     for _ in 0..len {
-        let rnd = rand_num(53);
-        res.push(BASIC_CHAR[rnd].to_string())
+        let rnd = rand_num(rand_limit);
+        res.push(captcha_array[rnd].to_string())
     }
     res
 }
@@ -189,6 +193,7 @@ pub struct CaptchaBuilder {
     width: usize,
     height: usize,
     complexity: usize,
+    captcha_char: Vec<char>,
 }
 
 impl CaptchaBuilder {
@@ -198,11 +203,17 @@ impl CaptchaBuilder {
             width: 220,
             height: 70,
             complexity: 5,
+            captcha_char: BASIC_CHAR.to_vec(),
         }
     }
 
     pub fn length(mut self, length: usize) -> Self {
         self.length = length;
+        self
+    }
+
+    pub fn captcha_char(mut self, captcha_char: Vec<char>) -> Self {
+        self.captcha_char = captcha_char;
         self
     }
 
@@ -230,7 +241,7 @@ impl CaptchaBuilder {
 
     pub fn build(self) -> Captcha {
         // Generate an array of captcha characters
-        let res = get_captcha(self.length);
+        let res = get_captcha(self.length, self.captcha_char);
 
         let text = res.join("");
 

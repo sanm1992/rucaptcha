@@ -855,6 +855,7 @@ version = "3.0.0"
 dependencies = [
  "image",
  "imageproc",
+ "lazy_static",
  "magnus",
  "rand 0.8.5",
  "rusttype",

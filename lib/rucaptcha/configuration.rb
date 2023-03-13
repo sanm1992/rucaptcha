@@ -11,5 +11,7 @@ module RuCaptcha
     attr_accessor :difficulty
     # skip_cache_store_check, default: false
     attr_accessor :skip_cache_store_check
+    # 自定义验证码字符集
+    attr_accessor :captcha_char
   end
 end
